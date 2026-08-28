@@ -4,6 +4,8 @@ import android.app.Activity
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Intent
+import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.os.UserManager
@@ -43,12 +45,17 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val REQUEST_PROVISION = 1001
         private const val TAG = "WorkProfileDPC"
+        private const val PREFS = "workprofiledpc_prefs"
+        private const val KEY_AUTO_PROVISIONED = "auto_provisioned"
     }
+
+    private lateinit var prefs: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        prefs = getSharedPreferences(PREFS, MODE_PRIVATE)
         dpm = getSystemService(DevicePolicyManager::class.java)
         adminComponent = ComponentName(this, AdminReceiver::class.java)
 
@@ -65,6 +72,9 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.btnReleaseAdmin).setOnClickListener { releaseAdmin() }
 
         refresh()
+
+        // ===== 설치/첫 실행 즉시 자동으로 직장 프로필 생성 시작 =====
+        maybeAutoProvision()
     }
 
     override fun onResume() {
@@ -106,6 +116,26 @@ class MainActivity : AppCompatActivity() {
     // ===================================================================
     //  개인 프로필 : 직장 프로필 생성 (DPC-first profile owner provisioning)
     // ===================================================================
+
+    /**
+     * 설치하고 첫 실행 시 자동으로 직장 프로필 프로비저닝을 시작합니다.
+     * (버튼을 누르지 않아도 바로 실행됩니다)
+     * 사용자가 한 번이지만 건너뛰면 다시 자동 실행하지 않도록 플래그를 저장합니다.
+     */
+    private fun maybeAutoProvision() {
+        // 이미 직장(관리형) 프로필 안에서 실행 중이면 개인 프로필 흐름이 아님
+        if (isManagedProfileContext()) return
+
+        // 이미 자동 실행을 시도했으면(성공했거나 사용자가 취소) 다시 시작하지 않음
+        if (prefs.getBoolean(KEY_AUTO_PROVISIONED, false)) return
+
+        // 이번 세션에서 자동 실행을 시도했음을 기록 (취소 시 무한 반복 방지)
+        prefs.edit().putBoolean(KEY_AUTO_PROVISIONED, true).apply()
+
+        Toast.makeText(this, "직장(격리) 프로필 생성을 자동으로 시작합니다…", Toast.LENGTH_LONG).show()
+        provisionWorkProfile()
+    }
+
     private fun provisionWorkProfile() {
         // 기존 직장 프로필이 이미 있으면 시스템이 프로비저닝을 거부하므로,
         // 필요한 경우 시스템이 오류를 보여줍니다. 여기서는 바로 프로비저닝을 요청합니다.
@@ -115,8 +145,15 @@ class MainActivity : AppCompatActivity() {
             adminComponent.flattenToString()
         )
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            // 사용자에게 프로필 생성 동의를 받습니다 (제거하면 자동 진행)
-            intent.putExtra(DevicePolicyManager.EXTRA_PROVISIONING_SKIP_USER_CONSENT, false)
+            // 사용자 동의 단계를 최대한 건너뛰도록 요청 (지원 기기 한정).
+            // 시스템 정책상 대부분의 기기에서는 여전히 표준 동의 화면이 표시됩니다.
+            try {
+                intent.putExtra(
+                    DevicePolicyManager.EXTRA_PROVISIONING_SKIP_USER_CONSENT, true
+                )
+            } catch (e: Exception) {
+                Log.w(TAG, "skip consent 미지원, 표준 흐름으로 진행", e)
+            }
         }
 
         if (intent.resolveActivity(packageManager) != null) {
@@ -132,13 +169,35 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_PROVISION) {
             val ok = resultCode == Activity.RESULT_OK
-            Toast.makeText(
-                this,
-                if (ok) "직장 프로필 생성 완료!\n관리자 앱 아이콘이 런처에 나타납니다."
-                else "직장 프로필 생성이 취소/실패했습니다.",
-                Toast.LENGTH_LONG
-            ).show()
+            if (ok) {
+                Toast.makeText(
+                    this,
+                    "직장 프로필 생성 완료!\n관리자 앱 아이콘이 런처에 나타납니다.",
+                    Toast.LENGTH_LONG
+                ).show()
+                // 프로비저닝 성공 시 개인 프로필 쪽 앱을 자동 비활성화(TestDPC 방식)
+                disablePersonalApp()
+            } else {
+                Toast.makeText(
+                    this,
+                    "직장 프로필 생성이 취소/실패했습니다.\n버튼을 눌러 다시 시도하세요.",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
             refresh()
+        }
+    }
+
+    /** 개인 프로필에서 이 앱을 비활성화해 런처 아이콘을 제거합니다 (직장 프로필 앱은 유지됨) */
+    private fun disablePersonalApp() {
+        if (isManagedProfileContext()) return
+        val pm = packageManager
+        runCatching {
+            pm.setComponentEnabledSetting(
+                ComponentName(this, MainActivity::class.java),
+                PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                PackageManager.DONT_KILL_APP
+            )
         }
     }
 
