@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/surf"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- ============ 개인 프로필 : 직장 프로필 생성 ============ -->
+        <LinearLayout
+            android:id="@+id/personalPanel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/personalStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/brand_dark"
+                android:padding="16dp"
+                android:textColor="@color/white"
+                android:textSize="15sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="직장 프로필 생성(격리 공간)"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:textColor="#111827" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="시스템이 별도의 격리된 Android 공간(직장 프로필)을 만들고,\n이 앱을 그 공간의 관리자(Profile Owner)로 지정합니다.\n개인 프로필에는 어떤 관리 권한도 주지 않습니다."
+                android:textSize="13sp"
+                android:textColor="#4B5563" />
+
+            <Button
+                android:id="@+id/btnProvision"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="직장 프로필 생성하기"
+                app:cornerRadius="12dp" />
+
+            <Button
+                android:id="@+id/btnOpenWorkSettings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="직장 프로필 보안 설정 열기"
+                app:cornerRadius="12dp" />
+        </LinearLayout>
+
+        <!-- ============ 직장 프로필 : 관리자(Profile Owner) 패널 ============ -->
+        <LinearLayout
+            android:id="@+id/ownerPanel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/ownerStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/brand_dark"
+                android:padding="16dp"
+                android:textColor="@color/white"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/ownerBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_gravity="start"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="8dp"
+                android:textColor="@color/white"
+                android:textSize="13sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="직장 프로필 잠금(보안폴더)"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:textColor="#111827" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="잠금을 설정하면 직장 앱을 열 때마다 비밀번호(4자리 이상)를 요구합니다."
+                android:textSize="13sp"
+                android:textColor="#4B5563" />
+
+            <Button
+                android:id="@+id/btnSetLock"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="비밀번호 잠금 설정"
+                app:cornerRadius="12dp" />
+
+            <Button
+                android:id="@+id/btnLockNow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="지금 잠그기"
+                app:cornerRadius="12dp" />
+
+            <Button
+                android:id="@+id/btnReleaseAdmin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="관리자(Profile Owner) 해제"
+                app:cornerRadius="12dp" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:textSize="12sp"
+            android:textColor="#6B7280"
+            android:text="※ TestDPC처럼 동작하는 개발용 참조 앱입니다.\n\n・ 개인 프로필 / 직장 프로필 양쪽에서 실행되며 실행 위치에 따라 UI가 바뀝니다.\n・ 직장 프로필 생성 시 운영체제 본체에 영향은 없고, 격리 공간만 추가됩니다.\n・ 직장 프로필을 제거해도 개인 데이터는 그대로 유지됩니다." />
+
+    </LinearLayout>
+</ScrollView>

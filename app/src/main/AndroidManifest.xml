@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:allowBackup="false"
+        android:icon="@drawable/ic_launcher_fg"
+        android:label="@string/app_name"
+        android:roundIcon="@drawable/ic_launcher_fg"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.WorkProfileDPC"
+        tools:targetApi="34">
+
+        <!--
+          DPC 리시버. 직장 프로필을 프로비저닝하면 시스템이 이 컴포넌트를
+          그 프로필의 Profile Owner로 지정합니다.
+          NOTE: Device Owner로 쓰이지 않으므로 dpm set-device-owner 가 필요 없습니다.
+        -->
+        <receiver
+            android:name=".AdminReceiver"
+            android:description="@string/receiver_description"
+            android:directBootAware="true"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_DEVICE_ADMIN">
+            <meta-data
+                android:name="android.app.device_admin"
+                android:resource="@xml/device_admin_device" />
+            <intent-filter>
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+            </intent-filter>
+        </receiver>
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+    </application>
+
+</manifest>

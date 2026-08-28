@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">WorkProfile DPC</string>
+    <string name="receiver_description">직장 프로필(Work Profile)을 생성/관리하기 위한 기기 정책 컨트롤러</string>
+    <string name="status_owner">기기 소유자(Device Owner)</string>
+    <string name="status_profile_owner">프로필 소유자(Profile Owner)</string>
+    <string name="status_admin">기기 관리자(Active Admin)</string>
+    <string name="status_none">아직 권한 없음</string>
+    <string name="status_work_profile">직장 프로필이 이미 존재합니다</string>
+    <string name="error_already_managed">이 사용자는 이미 관리형 프로필로 관리되고 있습니다</string>
+</resources>
