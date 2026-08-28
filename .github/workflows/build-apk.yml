@@ -1,6 +1,6 @@
 name: Build APK
 
-# push(기본 브랜치), PR, 수동 실행 시 Android APK를 빌드해 artifact로 올립니다.
+# push(기본 브랜치), PR, 수동 실행 시 APK를 빌드해 GitHub Release로 게시합니다.
 on:
   push:
     branches: [ main, master ]
@@ -10,6 +10,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # Release(릴리스) 생성/업로드 권한
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,17 +35,28 @@ jobs:
         with:
           gradle-version: '8.5'
 
-      - name: Validate Gradle wrapper (if present)
-        run: chmod +x gradlew || true
-
       - name: Build debug APK
         run: |
           if [ -x ./gradlew ]; then ./gradlew assembleDebug --no-daemon
           else gradle assembleDebug --no-daemon; fi
 
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
+      - name: Verify APK exists
+        run: |
+          ls -la app/build/outputs/apk/debug/*.apk
+
+      - name: Compute version tag
+        id: tag
+        run: |
+          echo "version=v1.0.${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release with APK
+        uses: softprops/action-gh-release@v2
         with:
-          name: workprofile-dpc-debug
-          path: app/build/outputs/apk/debug/*.apk
-          if-no-files-found: error
+          tag_name: ${{ steps.tag.outputs.version }}
+          name: "WorkProfile DPC ${{ steps.tag.outputs.version }}"
+          draft: false
+          prerelease: true
+          files: app/build/outputs/apk/debug/*.apk
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
