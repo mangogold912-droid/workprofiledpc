@@ -78,14 +78,6 @@ class MainActivity : AppCompatActivity() {
             getSystemService(UserManager::class.java).isManagedProfile
     }
 
-    /** 이 기기에 직장(관리형) 프로필이 존재하는지 */
-    private fun hasWorkProfile(): Boolean {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return false
-        return getSystemService(UserManager::class.java).users.any {
-            it.userType == UserManager.USER_TYPE_PROFILE_MANAGED
-        }
-    }
-
     private fun refresh() {
         if (isManagedProfileContext()) {
             // ---- 직장 프로필 안 / 이 앱 = Profile Owner ----
@@ -104,12 +96,10 @@ class MainActivity : AppCompatActivity() {
             // ---- 개인 프로필 안 ----
             personalPanel.visibility = View.VISIBLE
             ownerPanel.visibility = View.GONE
-            personalStatus.text = if (hasWorkProfile())
-                "직장(격리) 프로필이 이미 활성화되어 있습니다.\n" +
-                "관리자 권한은 직장 프로필 안의 앱만 가집니다. (개인 앱은 권한 없음)"
-            else
-                "이 기기에는 아직 직장(격리) 프로필이 없습니다.\n" +
-                "아래 버튼으로 생성하세요. 개인 데이터는 건드리지 않습니다."
+            personalStatus.text =
+                "이 앱은 개인 프로필(원래 앱)에서 실행 중입니다.\n" +
+                "관리자 권한은 직장(격리) 프로필 안의 앱만 가지며, 개인 앱에는 없습니다.\n" +
+                "아래 버튼으로 직장 프로필을 생성하세요. 개인 데이터는 건드리지 않습니다."
         }
     }
 
@@ -117,11 +107,8 @@ class MainActivity : AppCompatActivity() {
     //  개인 프로필 : 직장 프로필 생성 (DPC-first profile owner provisioning)
     // ===================================================================
     private fun provisionWorkProfile() {
-        if (hasWorkProfile()) {
-            Toast.makeText(this, "직장 프로필이 이미 존재합니다.", Toast.LENGTH_SHORT).show()
-            return
-        }
-
+        // 기존 직장 프로필이 이미 있으면 시스템이 프로비저닝을 거부하므로,
+        // 필요한 경우 시스템이 오류를 보여줍니다. 여기서는 바로 프로비저닝을 요청합니다.
         val intent = Intent(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE)
         intent.putExtra(
             DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME,
